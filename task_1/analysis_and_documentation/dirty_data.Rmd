@@ -1,0 +1,22 @@
+---
+title: "Dirty data project - decathlon data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Dirty Data Project 
+
+This data set is 41 observations and 13 variables and is from decathlon events,
+the data is a mixture of times, distances, rank and competition. There are no NA
+and no clear errors in the data. 
+
+
+
+
+
+
+
+

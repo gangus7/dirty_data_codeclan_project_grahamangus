@@ -1,0 +1,76 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+
+dec_data <- read_rds("decathlon.rds")
+
+library(janitor)
+
+```
+
+```{r}
+row.names(dec_data)
+
+dec_data_clean <- clean_names(dec_data)
+
+dec_data_clean
+
+
+```
+
+# Who had the longest long jump?
+```{r}
+arrange(dec_data_clean, desc(long_jump))
+```
+# What was the average 100m time in each competition?
+
+```{r}
+mean(dec_data_clean[["x100m"]])
+dec_data_100m_og <- filter(dec_data_clean, competition == "OlympicG")
+dec_data_100m_deca <- filter(dec_data_clean, competition == "Decastar")
+mean(dec_data_100m_og[["x100m"]])
+```
+# Olympic games time 
+
+```{r}
+mean(dec_data_100m_deca[["x100m"]])
+```
+# Decastar time
+
+Who had the highest total points across both competitions?
+
+```{r}
+arrange(dec_data_clean, desc(points))
+```
+# What was the shot-put scores for the top three competitors in each competition?
+
+```{r}
+arrange(dec_data_100m_og, desc(shot_put))
+```
+
+
+```{r}
+arrange(dec_data_100m_deca, desc(shot_put))
+```
+What was the average points for competitors who ran the 400m in less than 50 seconds vs. those than ran 400m in more than 50 seconds?
+
+```{r}
+sub_50 <- filter(dec_data_clean, x400m < 50)
+
+mean(sub_50[["points"]])
+```
+```{r}
+above_50 <- filter(dec_data_clean, x400m > 50)
+
+mean(above_50[["points"]])
+```
+
+
+
+
+
+

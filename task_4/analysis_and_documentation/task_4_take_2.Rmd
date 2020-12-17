@@ -1,0 +1,198 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+#reading in the data
+
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+data_2015 <- read_excel("boing-boing-candy-2015.xlsx")
+data_2016 <- read_excel("boing-boing-candy-2016.xlsx")
+data_2017 <- read_excel("boing-boing-candy-2017.xlsx")
+
+```
+
+#Ran clean names and then selected appropriate cols
+
+
+```{r}
+clean_data_2015 <- clean_names(data_2015)
+
+clean_data_2015
+sub_data_2015 <- subset(clean_data_2015, select = 
+                          how_old_are_you:york_peppermint_patties)
+
+subbed_data_2015 <- subset(sub_data_2015, select =  c(- cash_or_other_forms_of_legal_tender, - dental_paraphenalia, - hugs_actual_physical_hugs, - kale_smoothie, - white_bread, - whole_wheat_anything))
+```
+
+#Ran clean names and then selected appropriate cols
+
+```{r}
+names(data_2016)
+clean_data_2016 <- clean_names(data_2016)
+sub_data_2016 <- subset(clean_data_2016, select = are_you_going_actually_going_trick_or_treating_yourself:york_peppermint_patties)
+
+subbed_data_2016 <- subset(sub_data_2016, select = c(- cash_or_other_forms_of_legal_tender, - dental_paraphenalia, - hugs_actual_physical_hugs, - kale_smoothie, - white_bread, - whole_wheat_anything, 
+ - person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes))
+```
+
+#Changed col names
+
+```{r}
+names(subbed_data_2016)[names(subbed_data_2016) == 'which_country_do_you_live_in'] <- 'country'
+names(subbed_data_2016)[names(subbed_data_2016) == 'your_gender'] <- 'gender'
+names(subbed_data_2016)[names(subbed_data_2016) == 'which_state_province_county_do_you_live_in'] <- 'state'
+```
+
+#Ran clean names and then selected appropriate cols
+
+```{r}
+names(data_2017)
+clean_data_2017 <- clean_names(data_2017)
+```
+
+#Changed col names
+
+```{r}
+names(clean_data_2017) = gsub(pattern = "q6_", replacement = "", x = names(clean_data_2017))
+
+
+names(clean_data_2017)[names(clean_data_2017) == 'q1_going_out'] <- 'are_you_going_actually_going_trick_or_treating_yourself'
+names(clean_data_2017)[names(clean_data_2017) == 'q2_gender'] <- 'gender'
+names(clean_data_2017)[names(clean_data_2017) == 'q3_age'] <- 'how_old_are_you'
+names(subbed_data_2017)[names(clean_data_2017) == 'q4_country'] <- 'country'
+names(subbed_data_2017)[names(clean_data_2017) == 'q5_state_province_county_etc'] <- 'state'
+names(subbed_data_2017)[names(subbed_data_2017) == '100_grand_bar'] <- 'grand_bar'
+names(subbed_data_2016)[names(subbed_data_2016) == 'x100_grand_bar'] <- 'grand_bar'
+names(subbed_data_2015)[names(subbed_data_2015) == 'x100_grand_bar'] <- 'grand_bar'
+```
+
+#Ran clean names and then selected appropriate cols
+
+```{r}
+sub_data_2017 <- subset(clean_data_2017, select = are_you_going_actually_going_trick_or_treating_yourself:york_peppermint_patties)
+
+subbed_data_2017 <- subset(sub_data_2017, select = c(- cash_or_other_forms_of_legal_tender, - dental_paraphenalia, - hugs_actual_physical_hugs, - kale_smoothie, - white_bread, - whole_wheat_anything, - bonkers_the_board_game, - real_housewives_of_orange_county_season_9_blue_ray))
+```
+
+#Pivot longer
+
+```{r}
+longer_data_15 <-subbed_data_2015 %>%
+  pivot_longer(cols = c(butterfinger:york_peppermint_patties),
+               names_to = "candy",
+               values_to = "response")
+longer_data_15
+```
+
+#Pivot longer
+
+```{r}
+longer_data_16 <-subbed_data_2016 %>%
+  pivot_longer(cols = c(grand_bar:york_peppermint_patties),
+               names_to = "candy",
+               values_to = "response")
+longer_data_16
+```
+
+#Pivot longer
+
+```{r}
+longer_data_17 <-subbed_data_2017 %>%
+  pivot_longer(cols = c(grand_bar:york_peppermint_patties),
+               names_to = "candy",
+               values_to = "response")
+longer_data_17
+
+```
+
+#binded rows
+
+```{r}
+bind_15_16 <- bind_rows(longer_data_15, longer_data_16)
+
+bind_15_16_17 <- bind_rows(bind_15_16, longer_data_17)
+
+bind_15_16_17
+```
+
+#set to lower case
+
+```{r}
+bind_15_16_17$country = tolower(bind_15_16_17$country) 
+
+
+```
+
+#cleaned country names
+
+```{r}
+bind_15_16_17 <- bind_15_16_17 %>% 
+  mutate(
+    country = recode(country, "usa" = "america", "u.s.a" = "america", "united states of america" = "america", "united states" = "america", "us" = "america", "merica" = "america", "the yoo ess of aaayyyyyy" = "america", "u.s." = "america", "u.s.a." = "america", "usa usa usa!!!!" = "america", "us of a" = "america", "murica" = "america", "usa! usa! usa!" = "america", "usa usa usa" = "america")
+    )
+```
+
+# What is the total number of candy ratings given across the three years. (number of candy ratings, not number of raters. Don’t count missing values)
+
+```{r}
+ count(is.na(bind_15_16_17$response))
+```
+
+# What was the average age of people who are going out trick or treating and the average age of people 3. not going trick or treating?
+
+```{r}
+filter_not_going <- filter(bind_15_16_17, 
+       are_you_going_actually_going_trick_or_treating_yourself == "No") 
+
+
+summarise(filter_not_going, mean_not_going = mean(how_old_are_you))
+
+class(bind_15_16_17$how_old_are_you)
+
+numeric_col <- bind_15_16_17 %>%
+  mutate(mean_age = as.numeric(bind_15_16_17$how_old_are_you)) 
+mean(numeric_filter$mean_age, na.rm = TRUE)
+
+unique(numeric_filter$mean_age)
+
+numeric_filter <-
+  numeric_col %>% 
+  mutate(mean_age = str_replace_all(mean_age, "[a-zA-Z]", "0"))
+
+numeric_filter <- filter(numeric_filter, mean_age < 1 | mean_age > 100)
+
+```
+
+#For each of joy, despair and meh, which candy bar revived the most of these ratings?
+```{r}
+table(unlist(bind_15_16_17$response))
+```
+
+#How many people rated Starburst as despair?
+
+
+```{r}
+filter(bind_15_16_17, candy == "starburst" & response == "DESPAIR")
+```
+
+#What was the most popular candy bar by this rating system for each gender in the dataset?
+
+
+```{r}
+bind_15_16_17$response <- revalue(bind_15_16_17$response, c("DESPAIR"=-1))
+bind_15_16_17$response <- revalue(bind_15_16_17$response, c("MEH"=0))
+bind_15_16_17$response <- revalue(bind_15_16_17$response, c("JOY"=1))
+
+candy_grouped <- bind_15_16_17 %>%
+  group_by(candy) %>%
+  summarise(sum_response = sum(as.numeric(response), na.rm = TRUE))
+                       
+candy_grouped
+```
+
+
